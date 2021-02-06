@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta
+			name="viewport"
+			content="initial-scale=1, maximum-scale=1, user-scalable=no"
+		/>
+		<title>Proiect GIS - Analizarea unitatilor medicale pe judete</title>
+
+		<style>
+			html,
+			body,
+			#divView {
+				padding: 0;
+				margin: 0;
+				height: 100%;
+				width: 100%;
+			}
+		</style>
+
+		<link
+			rel="stylesheet"
+			href="https://js.arcgis.com/4.17/esri/themes/light/main.css"
+		/>
+		<script src="https://js.arcgis.com/4.17/"></script>
+
+		<script>
+			require([
+				"esri/Map",
+				"esri/views/MapView",
+				"esri/layers/FeatureLayer",
+				"esri/symbols/SimpleMarkerSymbol",
+				"esri/symbols/SimpleFillSymbol",
+				"esri/renderers/ClassBreaksRenderer",
+				"esri/widgets/Legend",
+				"esri/widgets/LayerList",
+				"esri/widgets/Locate",
+				"esri/Graphic",
+				"esri/widgets/ScaleBar",
+				"esri/widgets/Home",
+				"esri/widgets/Measurement",
+				"esri/widgets/Print",
+				"esri/widgets/Compass",
+				"esri/widgets/Attribution",
+				"esri/widgets/Fullscreen",
+				"esri/widgets/BasemapToggle",
+				"esri/widgets/Expand",
+				"esri/widgets/BasemapGallery",
+				"esri/widgets/Search",
+				"esri/config",
+			], function (
+				Map,
+				MapView,
+				FeatureLayer,
+				SimpleMarkerSymbol,
+				SimpleFillSymbol,
+				ClassBreaksRenderer,
+				Legend,
+				LayerList,
+				Locate,
+				Graphic,
+				ScaleBar,
+				Home,
+				Measurement,
+				Print,
+				Compass,
+				Attribution,
+				Fullscreen,
+				BasemapToggle,
+				Expand,
+				BasemapGallery,
+				Search,
+				esriConfig
+			) {
+				const API_KEY =
+					"AAPK6ea4241b06ae4afa8fc84fef4fe3190ezlZ7N-_kRdKv83gK4fkJqS0D2cgrDxnQs5FFM8w2JYE0vBlmg8S-gBgNk6-Z10f0";
+				esriConfig.apiKey = API_KEY;
+				var harta = new Map({
+					//basemap: "arcgis-topographic", //Basemap layer service
+					basemap: "topo-vector",
+				});
+
+				var viewHarta = new MapView({
+					map: harta,
+					container: "divView",
+					center: [25, 46],
+					zoom: 7,
+				});
+
+				//SIMBOLIZARE DIFERITA A SPITALELOR
+				var simbol = {
+					type: "simple",
+					type: "picture-marker",
+					url: "https://file-storage-static.herokuapp.com/images/hospital.png",
+					width: "24px",
+					height: "24px",
+				};
+				var simbol1 = {
+					type: "simple",
+					type: "picture-marker",
+					url: "https://file-storage-static.herokuapp.com/images/clinica.png",
+					width: "24px",
+					height: "24px",
+				};
+				var simbol2 = {
+					type: "simple",
+					type: "picture-marker",
+					url: "https://file-storage-static.herokuapp.com/images/dentist.png",
+					width: "24px",
+					height: "24px",
+				};
+				var simbol3 = {
+					type: "simple",
+					type: "picture-marker",
+					url: "https://file-storage-static.herokuapp.com/images/doctor.png",
+					width: "24px",
+					height: "24px",
+				};
+				var simbol4 = {
+					type: "simple",
+					type: "picture-marker",
+					url: "https://file-storage-static.herokuapp.com/images/pills.png",
+					width: "24px",
+					height: "24px",
+				};
+				var afisareSimboluriUnitatiMedicale = {
+					type: "unique-value",
+					field: "amenity",
+					label: "Amenajare",
+					defaultSymbol: simbol,
+					defaultLabel: "Spital",
+					uniqueValueInfos: [
+						{
+							value: "pharmacy",
+							symbol: simbol4,
+							label: "Farmacie",
+						},
+						{
+							value: "clinic",
+							symbol: simbol1,
+							label: "Clinica",
+						},
+						{
+							value: "dentist",
+							symbol: simbol2,
+							label: "Cabinet stomatologic",
+						},
+						{
+							value: "doctors",
+							symbol: simbol3,
+							label: "Cabinet doctor",
+						},
+					],
+				};
+				//SIMBOLIZARE DIFERITA A JUDETE
+				var simbolMd1 = {
+					type: "simple-fill",
+					color: [242, 241, 209, 0.5],
+					style: "solid",
+					outline: { color: [0, 112, 200, 0.5], width: 2 },
+				};
+				var simbolMd2 = {
+					type: "simple-fill",
+					color: [241, 192, 160, 0.5],
+					style: "solid",
+					outline: { color: [0, 100, 200, 0.5], width: 2 },
+				};
+				var simbolMd3 = {
+					type: "simple-fill",
+					color: [170, 227, 167, 0.5],
+					style: "solid",
+					outline: { color: [0, 100, 200, 0.5], width: 2 },
+				};
+				var simbolMd4 = {
+					type: "simple-fill",
+					color: [134, 182, 201, 0.5],
+					style: "solid",
+					outline: { color: [0, 100, 200, 0.5], width: 2 },
+				};
+				var rendererJudete = new ClassBreaksRenderer({
+					type: "class-breaks",
+					field: "pop2011",
+				});
+
+				rendererJudete.addClassBreakInfo({
+					minValue: 0,
+					maxValue: 250000,
+					symbol: simbolMd1,
+				});
+
+				rendererJudete.addClassBreakInfo({
+					minValue: 250001,
+					maxValue: 500000,
+					symbol: simbolMd2,
+				});
+
+				rendererJudete.addClassBreakInfo({
+					minValue: 500001,
+					maxValue: 750000,
+					symbol: simbolMd3,
+				});
+
+				rendererJudete.addClassBreakInfo({
+					minValue: 750001,
+					maxValue: 3000000,
+					symbol: simbolMd4,
+				});
+
+				const urlJudeteRecensamant =
+					"https://services7.arcgis.com/bvPn7W5Xz0IihcKC/arcgis/rest/services/ro_judete_poligon/FeatureServer";
+				var featureLayerJudete = new FeatureLayer({
+					url: urlJudeteRecensamant,
+					renderer: rendererJudete,
+					title: "Numar populatie",
+				});
+
+				const urlUnitatiMedicale =
+					"https://services7.arcgis.com/bvPn7W5Xz0IihcKC/arcgis/rest/services/data/FeatureServer/0";
+
+				var featureLayerUnitatiMedicale = new FeatureLayer({
+					url: urlUnitatiMedicale,
+					renderer: afisareSimboluriUnitatiMedicale,
+					title: "Unitati medicale",
+				});
+
+				featureLayerUnitatiMedicale.featureReduction = {
+					type: "cluster",
+					clusterRadius: "80px",
+					popupTemplate: {
+						// cluster_count is an aggregate field indicating the number
+						// of features summarized by the cluster
+						content:
+							"Acest cluster reprezinta {cluster_count} unitati medicale.",
+					},
+					// You should adjust the clusterMinSize to properly fit labels
+					clusterMinSize: "24px",
+					clusterMaxSize: "50px",
+					labelingInfo: [
+						{
+							// turn off deconfliction to ensure all clusters are labeled
+							deconflictionStrategy: "none",
+							labelExpressionInfo: {
+								expression: "Text($feature.cluster_count, '#,###')",
+							},
+							symbol: {
+								type: "text",
+								color: "#004a5d",
+								font: {
+									weight: "bold",
+									family: "Noto Sans",
+									size: "12px",
+								},
+							},
+							labelPlacement: "center-center",
+						},
+					],
+				};
+
+				harta.addMany([featureLayerJudete, featureLayerUnitatiMedicale]);
+
+				//ADAUGARE POP-UP
+				var sablonSpitalePopUp = {
+					title: "Locatie: {name}",
+					content: [
+						{
+							type: "fields",
+							fieldInfos: [
+								{
+									fieldName: "addr_street",
+									label: "Adresa",
+								},
+								{
+									fieldName: "addr_city",
+									label: "Oras",
+								},
+								{
+									fieldName: "healthcare",
+									label: "Tip de asistenta medicala",
+								},
+								{
+									fieldName: "emergency",
+									label: "Medicina de urgenta",
+								},
+								{
+									fieldName: "amenity",
+									label: "Amenajare",
+								},
+								{
+									fieldName: "changeset_timestamp",
+									label: "Ultima actualizare a informatiilor",
+								},
+							],
+						},
+					],
+				};
+				featureLayerUnitatiMedicale.popupTemplate = sablonSpitalePopUp;
+
+				var sablonJudetePopUp = {
+					title: "Judet: {county}",
+					content: [
+						{
+							type: "fields",
+							fieldInfos: [
+								{
+									fieldName: "date_ref",
+									label: "Data",
+								},
+								{
+									fieldName: "last_day",
+									label: "Ultima zi",
+								},
+								{
+									fieldName: "last_week",
+									label: "Ultima saptamana",
+								},
+								{
+									fieldName: "last_month",
+									label: "Ultima luna",
+								},
+							],
+						},
+					],
+				};
+				featureLayerJudete.popupTemplate = sablonJudetePopUp;
+
+				var legenda = new Legend({
+					view: viewHarta,
+					layerInfos:
+						viewHarta[
+							{
+								layer: featureLayerJudete,
+								title: "Judete - nr persoane infectate/luna",
+							}
+						],
+				});
+				viewHarta.ui.add(legenda, "bottom-right");
+
+				var listaStraturi = new LayerList({
+					view: viewHarta,
+				});
+				viewHarta.ui.add(listaStraturi, "top-right");
+
+				var localizare = new Locate({
+					view: viewHarta,
+					graph: new Graphic({
+						symbol: { type: "simple-marker" },
+					}),
+				});
+				viewHarta.ui.add(localizare, "left-bottom");
+
+				var scaraGrafica = new ScaleBar({
+					view: viewHarta,
+					unit: "metric",
+					label: "Scara grafica",
+				});
+				viewHarta.ui.add(scaraGrafica, "bottom-left");
+
+				var acasa = new Home({
+					view: viewHarta,
+				});
+				viewHarta.ui.add(acasa, "top-left");
+
+				// var masoaraDistante = new Measurement({
+				//     view: viewHarta,
+				//     activeTool: "distance",
+				//     unit: "metric"
+				// });
+				// viewHarta.ui.add(masoaraDistante, "top-left");
+
+				// var imprimare = new Print({
+				// 	view: viewHarta,
+				// 	printServiceUrl:
+				// 		"https://utility.arcgisonline.com/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task",
+				// });
+				// viewHarta.ui.add(imprimare, "bottom-left");
+
+				var busola = new Compass({
+					view: viewHarta,
+				});
+				viewHarta.ui.add(busola, "top-left");
+
+				var drepturiAutor = new Attribution({
+					view: viewHarta,
+					//attributionText:"IE - Cibernetica - Horatiu"
+				});
+				viewHarta.ui.add(drepturiAutor, "bottom-left");
+
+				var totEcranul = new Fullscreen({
+					view: viewHarta,
+				});
+				viewHarta.ui.add(totEcranul, "top-left");
+
+				var schimbaHartaFundal = new BasemapToggle({
+					view: viewHarta,
+					nextBaseMap: "hybrid",
+				});
+				viewHarta.ui.add(schimbaHartaFundal, "top-left");
+
+				var hartiFundal = new BasemapGallery({
+					view: viewHarta,
+					container: document.createElement("div"),
+				});
+
+				var extindeHartiFundal = new Expand({
+					view: viewHarta,
+					content: hartiFundal,
+					expandIconClass: "esri-icon-basemap-gallery",
+				});
+				viewHarta.ui.add(extindeHartiFundal, "top-left");
+
+				const search = new Search({
+					//Add Search widget
+					view: viewHarta,
+				});
+				viewHarta.ui.add(search, "top-left"); //Add to the map
+			});
+		</script>
+	</head>
+	<body>
+		<div id="divView"></div>
+	</body>
+</html>
