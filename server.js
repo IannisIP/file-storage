@@ -2,4 +2,7 @@ const express = require("express");
 
 const app = express();
 app.use("/images", express.static(__dirname + "/public"));
-app.listen(8080, () => console.log("Server started"));
+
+const port = process.env.PORT || 3001;
+
+app.listen(port, () => console.log("Server started"));
