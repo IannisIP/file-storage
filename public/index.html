@@ -23,6 +23,14 @@
 			rel="stylesheet"
 			href="https://js.arcgis.com/4.17/esri/themes/light/main.css"
 		/>
+
+		<link rel="stylesheet" href="common.css" />
+
+		<!-- require ArcGIS REST JS libraries from https://unpkg.com -->
+		<script src="https://unpkg.com/@esri/arcgis-rest-request@3.0.0/dist/umd/request.umd.js"></script>
+		<script src="https://unpkg.com/@esri/arcgis-rest-auth@3.0.0/dist/umd/auth.umd.js"></script>
+		<script src="https://unpkg.com/@esri/arcgis-rest-demographics@3.0.0/dist/umd/demographics.umd.js"></script>
+
 		<script src="https://js.arcgis.com/4.17/"></script>
 
 		<script>
@@ -75,6 +83,7 @@
 			) {
 				const API_KEY =
 					"AAPK6ea4241b06ae4afa8fc84fef4fe3190ezlZ7N-_kRdKv83gK4fkJqS0D2cgrDxnQs5FFM8w2JYE0vBlmg8S-gBgNk6-Z10f0";
+
 				esriConfig.apiKey = API_KEY;
 				var harta = new Map({
 					//basemap: "arcgis-topographic", //Basemap layer service
@@ -297,26 +306,42 @@
 				featureLayerUnitatiMedicale.popupTemplate = sablonSpitalePopUp;
 
 				var sablonJudetePopUp = {
-					title: "Judet: {county}",
+					title: "Judet: {name}",
 					content: [
 						{
 							type: "fields",
 							fieldInfos: [
 								{
-									fieldName: "date_ref",
-									label: "Data",
+									fieldName: "region",
+									label: "Regiune",
 								},
 								{
-									fieldName: "last_day",
-									label: "Ultima zi",
+									fieldName: "pop1948",
+									label: "Populatie 1948",
 								},
 								{
-									fieldName: "last_week",
-									label: "Ultima saptamana",
+									fieldName: "pop1956",
+									label: "Populatie 1956",
 								},
 								{
-									fieldName: "last_month",
-									label: "Ultima luna",
+									fieldName: "pop1966",
+									label: "Populatie 1966",
+								},
+								{
+									fieldName: "pop1977",
+									label: "Populatie 1977",
+								},
+								{
+									fieldName: "pop1992",
+									label: "Populatie 1992",
+								},
+								{
+									fieldName: "pop2002",
+									label: "Populatie 2002",
+								},
+								{
+									fieldName: "pop2011",
+									label: "Populatie 2011",
 								},
 							],
 						},
@@ -409,15 +434,51 @@
 				});
 				viewHarta.ui.add(extindeHartiFundal, "top-left");
 
-				const search = new Search({
-					//Add Search widget
-					view: viewHarta,
+				const authentication = new arcgisRest.ApiKey({
+					key: API_KEY,
 				});
-				viewHarta.ui.add(search, "top-left"); //Add to the map
+				viewHarta.on("hold", async (event) => {
+					// The event object contains the mapPoint and the screen coordinates of the location
+					// that was clicked.
+					var lat = Math.round(event.mapPoint.latitude * 1000) / 1000;
+					var long = Math.round(event.mapPoint.longitude * 1000) / 1000;
+
+					const response = await arcgisRest.queryDemographicData({
+						studyAreas: [{ geometry: { x: long, y: lat } }], // London
+						authentication: authentication,
+					});
+					const commonObj =
+						response.results[0].value.FeatureSet[0].features[0].attributes;
+					const data = [
+						commonObj.TOTFEMALES,
+						commonObj.TOTMALES,
+						commonObj.TOTPOP,
+						commonObj.TOTHH,
+					];
+
+					document.getElementById(
+						"fem"
+					).innerHTML = `Persoane de sex feminin: ${data[0]}`;
+					document.getElementById(
+						"masc"
+					).innerHTML = `Persoane de sex masculin: ${data[1]}`;
+					document.getElementById(
+						"pop"
+					).innerHTML = `Populatie Totala: ${data[2]}`;
+					document.getElementById(
+						"case"
+					).innerHTML = `Total locuinte: ${data[3]}`;
+				});
 			});
 		</script>
 	</head>
 	<body>
 		<div id="divView"></div>
+		<div id="myModal">
+			<p id="fem"></p>
+			<p id="masc"></p>
+			<p id="pop"></p>
+			<p id="case"></p>
+		</div>
 	</body>
 </html>
