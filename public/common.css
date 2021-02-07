@@ -6,4 +6,9 @@
 	font-family: sans-serif;
 	font-size: 24px;
 	font-weight: 700;
+
+	border-radius: 2px;
+	border: 2px solid #333333;
+	box-shadow: rgb(100 100 111 / 20%) 0px 7px 29px 0px;
+	background-color: rgba(255, 99, 71, 0.6);
 }
