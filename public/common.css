@@ -1,8 +1,4 @@
 #myModal {
-	position: absolute;
-	z-index: 1;
-	top: 350px;
-	left: 15px;
 	font-family: sans-serif;
 	font-size: 24px;
 	font-weight: 700;
@@ -11,4 +7,26 @@
 	border: 2px solid #333333;
 	box-shadow: rgb(100 100 111 / 20%) 0px 7px 29px 0px;
 	background-color: rgba(255, 99, 71, 0.6);
+}
+
+#seasons-filter {
+	height: 189px;
+	width: 120px;
+	visibility: hidden;
+}
+
+.season-item {
+	width: 100%;
+	text-align: center;
+	vertical-align: baseline;
+	cursor: pointer;
+	height: 50px;
+}
+
+.season-item:focus {
+	background-color: dimgrey;
+}
+
+.season-item:hover {
+	background-color: dimgrey;
 }

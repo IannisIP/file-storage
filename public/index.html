@@ -57,6 +57,7 @@
 				"esri/widgets/BasemapGallery",
 				"esri/widgets/Search",
 				"esri/config",
+				"esri/views/layers/support/FeatureFilter",
 			], function (
 				Map,
 				MapView,
@@ -79,14 +80,14 @@
 				Expand,
 				BasemapGallery,
 				Search,
-				esriConfig
+				esriConfig,
+				FeatureFilter
 			) {
 				const API_KEY =
 					"AAPK6ea4241b06ae4afa8fc84fef4fe3190ezlZ7N-_kRdKv83gK4fkJqS0D2cgrDxnQs5FFM8w2JYE0vBlmg8S-gBgNk6-Z10f0";
 
 				esriConfig.apiKey = API_KEY;
 				var harta = new Map({
-					//basemap: "arcgis-topographic", //Basemap layer service
 					basemap: "topo-vector",
 				});
 
@@ -231,11 +232,12 @@
 					url: urlUnitatiMedicale,
 					renderer: afisareSimboluriUnitatiMedicale,
 					title: "Unitati medicale",
+					outFields: ["amenity"],
 				});
 
 				featureLayerUnitatiMedicale.featureReduction = {
 					type: "cluster",
-					clusterRadius: "80px",
+					clusterRadius: "10px",
 					popupTemplate: {
 						// cluster_count is an aggregate field indicating the number
 						// of features summarized by the cluster
@@ -359,13 +361,22 @@
 							}
 						],
 				});
+
 				viewHarta.ui.add(legenda, "bottom-right");
 
+				//lista straturi
 				var listaStraturi = new LayerList({
 					view: viewHarta,
 				});
-				viewHarta.ui.add(listaStraturi, "top-right");
 
+				const listaStraturiEx = new Expand({
+					view: viewHarta,
+					content: listaStraturi,
+				});
+
+				viewHarta.ui.add(listaStraturiEx, "top-right");
+
+				//localizare
 				var localizare = new Locate({
 					view: viewHarta,
 					graph: new Graphic({
@@ -379,26 +390,12 @@
 					unit: "metric",
 					label: "Scara grafica",
 				});
-				viewHarta.ui.add(scaraGrafica, "bottom-left");
+				viewHarta.ui.add(scaraGrafica, "bottom-right");
 
 				var acasa = new Home({
 					view: viewHarta,
 				});
 				viewHarta.ui.add(acasa, "top-left");
-
-				// var masoaraDistante = new Measurement({
-				//     view: viewHarta,
-				//     activeTool: "distance",
-				//     unit: "metric"
-				// });
-				// viewHarta.ui.add(masoaraDistante, "top-left");
-
-				// var imprimare = new Print({
-				// 	view: viewHarta,
-				// 	printServiceUrl:
-				// 		"https://utility.arcgisonline.com/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task",
-				// });
-				// viewHarta.ui.add(imprimare, "bottom-left");
 
 				var busola = new Compass({
 					view: viewHarta,
@@ -416,35 +413,15 @@
 				});
 				viewHarta.ui.add(totEcranul, "top-left");
 
-				var schimbaHartaFundal = new BasemapToggle({
-					view: viewHarta,
-					nextBaseMap: "hybrid",
-				});
-				viewHarta.ui.add(schimbaHartaFundal, "top-left");
-
-				var hartiFundal = new BasemapGallery({
-					view: viewHarta,
-					container: document.createElement("div"),
-				});
-
-				var extindeHartiFundal = new Expand({
-					view: viewHarta,
-					content: hartiFundal,
-					expandIconClass: "esri-icon-basemap-gallery",
-				});
-				viewHarta.ui.add(extindeHartiFundal, "top-left");
-
 				const authentication = new arcgisRest.ApiKey({
 					key: API_KEY,
 				});
 				viewHarta.on("hold", async (event) => {
-					// The event object contains the mapPoint and the screen coordinates of the location
-					// that was clicked.
 					var lat = Math.round(event.mapPoint.latitude * 1000) / 1000;
 					var long = Math.round(event.mapPoint.longitude * 1000) / 1000;
 
 					const response = await arcgisRest.queryDemographicData({
-						studyAreas: [{ geometry: { x: long, y: lat } }], // London
+						studyAreas: [{ geometry: { x: long, y: lat } }],
 						authentication: authentication,
 					});
 					const commonObj =
@@ -469,6 +446,46 @@
 						"case"
 					).innerHTML = `Total locuinte: ${data[3]}`;
 				});
+
+				//filtrare in functie de amenity
+				const seasonsElement = document.getElementById("seasons-filter");
+
+				seasonsElement.addEventListener("click", filterBySeason);
+
+				function filterBySeason(event) {
+					const selectedSeason = event.target.getAttribute("data-season");
+					featureLayerUnitatiMedicale.filter = {
+						where: "amenity = '" + selectedSeason + "'",
+					};
+				}
+
+				viewHarta
+					.whenLayerView(featureLayerUnitatiMedicale)
+					.then(function (layerView) {
+						// flash flood warnings layer loaded
+						// get a reference to the flood warnings layerview
+						featureLayerUnitatiMedicale = layerView;
+
+						// set up UI items
+						seasonsElement.style.visibility = "visible";
+						const seasonsExpand = new Expand({
+							view: viewHarta,
+							content: seasonsElement,
+							expandIconClass: "esri-icon-filter",
+							group: "top-left",
+						});
+						//clear the filters when user closes the expand widget
+						seasonsExpand.watch("expanded", function () {
+							if (!seasonsExpand.expanded) {
+								featureLayerUnitatiMedicale.filter = null;
+							}
+						});
+						viewHarta.ui.add(seasonsExpand, "top-left");
+					});
+
+				viewHarta.ui.add("myModal", "bottom-left");
+
+				//highlight
 			});
 		</script>
 	</head>
@@ -479,6 +496,21 @@
 			<p id="masc"></p>
 			<p id="pop"></p>
 			<p id="case"></p>
+		</div>
+		<div id="seasons-filter" class="esri-widget">
+			<div class="season-item visible-season" data-season="pharmacy">
+				Farmacii
+			</div>
+			<div class="season-item visible-season" data-season="dentist">
+				Cabinete dentare
+			</div>
+			<div class="season-item visible-season" data-season="clinic">Clinici</div>
+			<div class="season-item visible-season" data-season="doctors">
+				Cabinete medicale
+			</div>
+		</div>
+		<div id="messageDiv" class="esri-widget esri-heading">
+			<h4 class="esri-heading">Click on a country</h4>
 		</div>
 	</body>
 </html>
