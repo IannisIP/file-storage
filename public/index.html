@@ -217,7 +217,7 @@
 				});
 
 				const urlJudeteRecensamant =
-					"https://services7.arcgis.com/bvPn7W5Xz0IihcKC/arcgis/rest/services/ro_judete_poligon/FeatureServer";
+					"https://services7.arcgis.com/bvPn7W5Xz0IihcKC/arcgis/rest/services/judete_romania_pib_pop2/FeatureServer";
 				var featureLayerJudete = new FeatureLayer({
 					url: urlJudeteRecensamant,
 					renderer: rendererJudete,
@@ -316,20 +316,20 @@
 									label: "Regiune",
 								},
 								{
-									fieldName: "pop1948",
-									label: "Populatie 1948",
+									fieldName: "Unitate_de_masura_PIB",
+									label: "Unitate de masura PIB",
 								},
 								{
-									fieldName: "pop1956",
-									label: "Populatie 1956",
+									fieldName: "PIB_2006",
+									label: "PIB 2006",
 								},
 								{
-									fieldName: "pop1966",
-									label: "Populatie 1966",
+									fieldName: "PIB_2007",
+									label: "PIB 2007",
 								},
 								{
-									fieldName: "pop1977",
-									label: "Populatie 1977",
+									fieldName: "PIB_2008",
+									label: "PIB 2008",
 								},
 								{
 									fieldName: "pop1992",
@@ -355,7 +355,7 @@
 						viewHarta[
 							{
 								layer: featureLayerJudete,
-								title: "Judete - nr persoane infectate/luna",
+								title: "Judete",
 							}
 						],
 				});
