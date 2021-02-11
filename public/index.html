@@ -84,7 +84,7 @@
 				FeatureFilter
 			) {
 				const API_KEY =
-					"AAPK6ea4241b06ae4afa8fc84fef4fe3190ezlZ7N-_kRdKv83gK4fkJqS0D2cgrDxnQs5FFM8w2JYE0vBlmg8S-gBgNk6-Z10f0";
+					"AAPK59aa92c2239c4c7a81fcbcd1fce7eef6QCVCyyxKm98xlxswrx583zdaEmR49kufda8vn8Kx-rswPq8CcraZDXpHBPBykokD";
 
 				esriConfig.apiKey = API_KEY;
 				var harta = new Map({
@@ -100,35 +100,30 @@
 
 				//SIMBOLIZARE DIFERITA A SPITALELOR
 				var simbol = {
-					type: "simple",
 					type: "picture-marker",
 					url: "https://file-storage-static.herokuapp.com/images/hospital.png",
 					width: "24px",
 					height: "24px",
 				};
 				var simbol1 = {
-					type: "simple",
 					type: "picture-marker",
 					url: "https://file-storage-static.herokuapp.com/images/clinica.png",
 					width: "24px",
 					height: "24px",
 				};
 				var simbol2 = {
-					type: "simple",
 					type: "picture-marker",
 					url: "https://file-storage-static.herokuapp.com/images/dentist.png",
 					width: "24px",
 					height: "24px",
 				};
 				var simbol3 = {
-					type: "simple",
 					type: "picture-marker",
 					url: "https://file-storage-static.herokuapp.com/images/doctor.png",
 					width: "24px",
 					height: "24px",
 				};
 				var simbol4 = {
-					type: "simple",
 					type: "picture-marker",
 					url: "https://file-storage-static.herokuapp.com/images/pills.png",
 					width: "24px",
@@ -190,30 +185,31 @@
 				};
 				var rendererJudete = new ClassBreaksRenderer({
 					type: "class-breaks",
-					field: "pop2011",
+					valueExpression: "( $feature.PIB_2008 * 1000000 ) / $feature.pop2011",
+					valueExpressionTitle: "PIB pe cap de locuitor",
 				});
 
 				rendererJudete.addClassBreakInfo({
 					minValue: 0,
-					maxValue: 250000,
+					maxValue: 15000,
 					symbol: simbolMd1,
 				});
 
 				rendererJudete.addClassBreakInfo({
-					minValue: 250001,
-					maxValue: 500000,
+					minValue: 15001,
+					maxValue: 20000,
 					symbol: simbolMd2,
 				});
 
 				rendererJudete.addClassBreakInfo({
-					minValue: 500001,
-					maxValue: 750000,
+					minValue: 20001,
+					maxValue: 30000,
 					symbol: simbolMd3,
 				});
 
 				rendererJudete.addClassBreakInfo({
-					minValue: 750001,
-					maxValue: 3000000,
+					minValue: 30001,
+					maxValue: 90000,
 					symbol: simbolMd4,
 				});
 
@@ -222,7 +218,7 @@
 				var featureLayerJudete = new FeatureLayer({
 					url: urlJudeteRecensamant,
 					renderer: rendererJudete,
-					title: "Numar populatie",
+					title: "PIB/LOCUITORI",
 				});
 
 				const urlUnitatiMedicale =
@@ -344,6 +340,41 @@
 								{
 									fieldName: "pop2011",
 									label: "Populatie 2011",
+								},
+								{
+									fieldName: "relationships/0/COMMON",
+									visible: false,
+									label: "Common Name",
+								},
+							],
+						},
+						{
+							type: "media",
+							mediaInfos: [
+								{
+									title: "<b>PIB-ul judetului</b>",
+									type: "column-chart",
+									caption: "",
+									value: {
+										fields: ["PIB_2006", "PIB_2007", "PIB_2008"],
+										normalizeField: null,
+										tooltipField: "relationships/0/COMMON",
+									},
+								},
+							],
+						},
+						{
+							type: "media",
+							mediaInfos: [
+								{
+									title: "<b>Populatia judetului</b>",
+									type: "column-chart",
+									caption: "",
+									value: {
+										fields: ["pop1992", "pop2002", "pop2011"],
+										normalizeField: null,
+										tooltipField: "relationships/0/COMMON",
+									},
 								},
 							],
 						},
@@ -484,8 +515,6 @@
 					});
 
 				viewHarta.ui.add("myModal", "bottom-left");
-
-				//highlight
 			});
 		</script>
 	</head>
@@ -508,9 +537,6 @@
 			<div class="season-item visible-season" data-season="doctors">
 				Cabinete medicale
 			</div>
-		</div>
-		<div id="messageDiv" class="esri-widget esri-heading">
-			<h4 class="esri-heading">Click on a country</h4>
 		</div>
 	</body>
 </html>
