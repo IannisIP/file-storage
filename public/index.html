@@ -432,7 +432,6 @@
 
 				var drepturiAutor = new Attribution({
 					view: viewHarta,
-					//attributionText:"IE - Cibernetica - Horatiu"
 				});
 				viewHarta.ui.add(drepturiAutor, "bottom-left");
 
@@ -512,6 +511,15 @@
 					});
 
 				viewHarta.ui.add("myModal", "bottom-left");
+
+				//cautare
+				const searchWidget = new Search({
+					view: viewHarta,
+				});
+				viewHarta.ui.add(searchWidget, {
+					position: "top-right",
+					index: 2,
+				});
 			});
 		</script>
 	</head>
