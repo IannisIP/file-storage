@@ -407,15 +407,6 @@
 
 				viewHarta.ui.add(listaStraturiEx, "top-right");
 
-				//localizare
-				var localizare = new Locate({
-					view: viewHarta,
-					graph: new Graphic({
-						symbol: { type: "simple-marker" },
-					}),
-				});
-				viewHarta.ui.add(localizare, "left-bottom");
-
 				var scaraGrafica = new ScaleBar({
 					view: viewHarta,
 					unit: "metric",
@@ -432,6 +423,12 @@
 					view: viewHarta,
 				});
 				viewHarta.ui.add(busola, "top-left");
+
+				//localizare
+				var localizare = new Locate({
+					view: viewHarta,
+				});
+				viewHarta.ui.add(localizare, "top-left");
 
 				var drepturiAutor = new Attribution({
 					view: viewHarta,
